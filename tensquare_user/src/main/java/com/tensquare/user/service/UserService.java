@@ -23,6 +23,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import util.IdWorker;
@@ -133,22 +134,8 @@ public class UserService {
 	 * @param id
 	 */
 	public void deleteById(String id) {
-		String header = request.getHeader("Authorization");
-		if(header==null || "".equals(header)){
-			throw new RuntimeException("权限不足！");
-		}
-		if(!header.startsWith("Bearer ")){
-			throw new RuntimeException("权限不足！");
-		}
-		//得到token
-		String token = header.substring(7);
-		try {
-			Claims claims = jwtUtil.parseJWT(token);
-			String roles = (String) claims.get("roles");
-			if(roles==null || !roles.equals("admin")){
-				throw new RuntimeException("权限不足！");
-			}
-		} catch (Exception e) {
+		String token = (String) request.getAttribute("claims_admin");
+		if(token==null || "".equals(token)){
 			throw new RuntimeException("权限不足！");
 		}
 		userDao.deleteById(id);
@@ -231,4 +218,10 @@ public class UserService {
 		}
 		return null;
 	}
+
+	@Transactional
+    public void updatefanscountandfollowcount(int x, String userid, String friendid) {
+		userDao.updatefanscount(x, friendid);
+		userDao.updatefollowcount(x,userid);
+    }
 }

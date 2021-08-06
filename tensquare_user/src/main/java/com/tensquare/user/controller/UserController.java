@@ -1,4 +1,5 @@
 package com.tensquare.user.controller;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +37,16 @@ public class UserController {
 	@Autowired
 	private RedisTemplate redisTemplate;
 
+	@Autowired
+	private JwtUtil jwtUtil;
 
+	/*
+	更新好友粉丝数和用户关注数
+	 */
+	@RequestMapping(value = "/{userid}/{friendid}/{x}",method = RequestMethod.PUT)
+	public void updatefanscountandfollowcount(@PathVariable String userid, @PathVariable String friendid, @PathVariable int x){
+		userService.updatefanscountandfollowcount(x,userid,friendid);
+	}
 	/*
 	 * 用户登录
 	 * */
@@ -46,7 +56,11 @@ public class UserController {
 		if(user==null){
 			return new Result(false,StatusCode.LOGINERROR,"登录失败");
 		}
-		return new Result(true,StatusCode.OK,"登录成功");
+		String token = jwtUtil.createJWT(user.getId(), user.getMobile(), "user");
+		Map<String, Object> map = new HashMap<>();
+		map.put("token", token);
+		map.put("roles", "user");
+		return new Result(true,StatusCode.OK,"登录成功", map);
 	}
 	/*
 	* 发送手机验证码
