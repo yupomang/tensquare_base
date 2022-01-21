@@ -16,7 +16,7 @@ public class ArticleService {
     public List<Article> findAll() {
         return articleDao.selectList(null);
     }
-
+    //测试
     public Article findById(String articleId) {
         return articleDao.selectById(articleId);
     }
